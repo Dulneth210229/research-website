@@ -36,6 +36,12 @@ When a link is empty, the site shows **"Link coming soon"** on its own. When a l
 
 If the **View** button doesn't appear, or the preview stays blank (this happens with short `1drv.ms` links), do this: in OneDrive, open the file → **File → Share → Embed** → **Generate**. Copy only the `src="..."` address from the code it gives you, and paste it into the item's `embed: ""` field.
 
+### Add a real, downloadable copy instead of a OneDrive link
+1. Put the file in `assets/docs/` (create the folder if it isn't there yet) with a short, clean filename, e.g. `assets/docs/taf-topic-assessment-form.pdf`.
+2. In `data.js`, find the item and set `url: "assets/docs/your-file-name.pdf"` (a relative path, not `https://...`). Leave `embed` empty and keep `status: "available"`.
+3. The site detects any `url` that isn't `http(s)://` as a local file: the action button automatically becomes **Download** (with the `download` attribute, so it saves instead of navigating) instead of **Open in OneDrive**, and PDFs still get the in-page **View** preview.
+4. Keep the file under a few MB where possible — everything in `assets/` ships in the Vercel deployment, so large files add to every visitor's deploy/download size.
+
 ### Replace a mock photo with a real one
 1. Put the photo in `assets/img/team/` (a square JPG or WebP, about 600×600 px and under 200 KB).
 2. Change `photo:` for that member, for example `photo: "assets/img/team/santhuka.jpg"`.
@@ -61,4 +67,4 @@ Then open http://localhost:8000.
 3. Framework preset: **Other**. Leave the build command and output directory empty. Click **Deploy**.
 4. Every push to the repository updates the site.
 
-The whole site is well under the university's 20 MB limit.
+The site itself (HTML/CSS/JS/images) is a few hundred KB; `assets/docs/` carries the real project documents and presentations and is several tens of MB in total, which is fine for Vercel (no size limit applies to static files at this scale) but worth knowing if you ever need to package the site for an email attachment or a submission portal with its own size cap.
