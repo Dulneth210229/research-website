@@ -84,7 +84,7 @@
     { t: "Documents", u: "documents.html", d: "Project charter, proposal, check lists, research paper, final reports" },
     { t: "Presentations", u: "presentations.html", d: "Proposal, Progress Presentation 1 and 2, final slides" },
     { t: "About us", u: "about.html", d: "Team members, supervisors, contributions" },
-    { t: "Contact us", u: "contact.html", d: "Emails, phone numbers and a general email template" }
+    { t: "Contact us", u: "contact.html", d: "Emails, phone numbers, contact form and a general email template" }
   ];
 
   function buildIndex() {
@@ -522,14 +522,33 @@
       form.addEventListener("submit", function (e) {
         e.preventDefault();
         var name = $("#cf-name").value.trim(), from = $("#cf-email").value.trim(),
-          subject = $("#cf-subject").value.trim(), msg = $("#cf-message").value.trim(), to = $("#contact-to").value;
-        var status = $("#cf-status");
-        if (!name || !subject || !msg) { status.textContent = "Please fill in your name, a subject and a message."; return; }
-        var all = (SITE.members || []).map(function (m) { return m.email; }).filter(Boolean).join(",");
-        var recipients = to === "all" ? all : to;
-        var body = "Dear AutoForge team,\n\n" + msg + "\n\nKind regards,\n" + name + (from ? "\n" + from : "");
-        window.location.href = "mailto:" + recipients + "?subject=" + encodeURIComponent("[" + (SITE.project.groupId || "AutoForge") + "] " + subject) + "&body=" + encodeURIComponent(body);
-        status.textContent = "Your email app should open with the message ready to send.";
+          subject = $("#cf-subject").value.trim(), msg = $("#cf-message").value.trim();
+        var status = $("#cf-status"), btn = $("#cf-submit"), label = $("span", btn);
+        function say(text, kind) {
+          status.textContent = text;
+          status.classList.toggle("is-ok", kind === "ok");
+          status.classList.toggle("is-error", kind === "error");
+        }
+        if (!name || !from || !subject || !msg) { say("Please fill in your name, email, a subject and a message.", "error"); return; }
+        if (!$("#cf-email").checkValidity()) { say("Please enter a valid email address.", "error"); return; }
+        var data = new FormData(form);
+        data.set("subject", "[" + (SITE.project.groupId || "AutoForge") + "] " + subject);
+        var to = $("#contact-to");
+        data.set("recipient", to.options[to.selectedIndex].text);
+        btn.disabled = true;
+        label.textContent = "Sending...";
+        say("", "");
+        fetch(form.action, { method: "POST", headers: { Accept: "application/json" }, body: data })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            if (!res.success) throw new Error(res.message);
+            form.reset();
+            say("Thank you, your message has been sent. We will get back to you soon.", "ok");
+          })
+          .catch(function (err) {
+            say("Sorry, the message could not be sent" + (err && err.message ? " (" + err.message + ")" : "") + ". Please try again or email us directly.", "error");
+          })
+          .then(function () { btn.disabled = false; label.textContent = "Send message"; });
       });
     }
     $$("[data-copy]").forEach(function (b) {

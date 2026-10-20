@@ -523,6 +523,8 @@ textarea { min-height: 150px; resize: vertical; }
 .form-row + .form-row, .field + .field { margin-top: 14px; }
 @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
 .form-note { font-size: .84rem; color: var(--ink-3); margin-top: 10px; }
+.form-note.is-ok { color: var(--ok); font-weight: 600; }
+.form-note.is-error { color: var(--warn); font-weight: 600; }
 
 /* --------------------------------------------------------------- CTA band */
 .cta-band {
